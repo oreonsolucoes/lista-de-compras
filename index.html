@@ -358,11 +358,70 @@ body{overscroll-behavior-y:none}
 .deptw.auto .sel{border-color:var(--accent);animation:glow 1.1s ease-out}
 .hint{display:flex;gap:5px;align-items:center;font-size:.74rem;color:var(--accent);font-weight:700}
 @keyframes glow{0%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 30%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+
+/* ================= Personagens e tour ================= */
+#amb{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+#amb>*{position:absolute;left:0;top:0;will-change:transform}
+.bear{width:44px;height:46px;filter:drop-shadow(0 4px 6px rgba(120,40,80,.28));transition:opacity .35s}
+.bear .bi{width:100%;height:100%;transform-origin:50% 100%;animation:breath 2.4s ease-in-out infinite}
+.bear.flip .bi{transform:scaleX(-1)}
+.bear .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+@keyframes breath{50%{transform:scaleY(.95) translateY(1px)}}
+.bear.flip .bi{animation-name:breathf}
+@keyframes breathf{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) scaleY(.95) translateY(1px)}}
+@keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+.walker{bottom:calc(var(--barh,0px) + env(safe-area-inset-bottom,0px));top:auto!important;filter:drop-shadow(0 4px 6px rgba(120,40,80,.25))}
+.walker .wi{animation:trot .45s ease-in-out infinite}
+.walker.flip .wi{transform:scaleX(-1)}
+.walker.flip .wi{animation-name:trotf}
+@keyframes trot{50%{transform:translateY(-4px)}}
+@keyframes trotf{0%,100%{transform:scaleX(-1)}50%{transform:scaleX(-1) translateY(-4px)}}
+.uni{width:96px;height:84px}
+.uni .leg{transform-box:fill-box;transform-origin:50% 0;animation:leg .45s ease-in-out infinite}
+.uni .leg.b{animation-delay:-.225s}
+@keyframes leg{0%,100%{transform:rotate(18deg)}50%{transform:rotate(-18deg)}}
+.uni .tail,.uni .mane{transform-box:fill-box;transform-origin:100% 0;animation:sway 0.9s ease-in-out infinite}
+.prin{width:50px;height:84px}
+.prin .dress{transform-box:fill-box;transform-origin:50% 0;animation:sway2 .5s ease-in-out infinite}
+.prin .wand{transform-box:fill-box;transform-origin:0 100%;animation:wand 1.2s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(6deg)}}
+@keyframes sway2{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@keyframes wand{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(14deg)}}
+.spk{width:10px;height:10px}
+.shoot{width:130px;height:3px;border-radius:3px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent2) 70%,transparent) 60%,#fff);filter:drop-shadow(0 0 6px var(--accent2))}
+.shoot::after{content:"";position:absolute;right:-7px;top:-6px;width:15px;height:15px;background:#fff;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);filter:drop-shadow(0 0 4px #fff)}
+
+#tourBtn{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(var(--barh,0px) + 18px + env(safe-area-inset-bottom,0px));z-index:30;width:48px;height:48px;border-radius:50%;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-family:var(--f-display);font-style:italic;font-weight:800;font-size:1.5rem;
+  box-shadow:0 10px 22px -8px rgba(196,70,130,.75);animation:bob 3.4s ease-in-out infinite;transition:bottom .35s,transform .2s}
+#tourBtn:hover{transform:scale(1.08)}
+#tourBtn::before{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid color-mix(in srgb,var(--accent) 45%,transparent);animation:ring 2.6s ease-out infinite}
+@keyframes ring{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.35);opacity:0}}
+
+#tour{position:fixed;inset:0;z-index:90}
+#tour .hole{position:fixed;border-radius:18px;box-shadow:0 0 0 9999px rgba(45,12,38,.58),0 0 0 3px var(--accent),0 0 24px 6px color-mix(in srgb,var(--accent) 50%,transparent);transition:all .4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
+#tour .hole.none{box-shadow:0 0 0 9999px rgba(45,12,38,.58)}
+.tcard{position:fixed;width:min(340px,calc(100vw - 32px));background:var(--surface);color:var(--ink);border-radius:22px;padding:18px;box-shadow:0 24px 50px -16px rgba(80,10,60,.55);
+  display:flex;flex-direction:column;gap:10px;transition:top .4s cubic-bezier(.2,.8,.2,1),left .4s cubic-bezier(.2,.8,.2,1);animation:rise .45s cubic-bezier(.2,.8,.2,1) both;border:1px solid var(--glass-line)}
+.tcard .th{display:flex;gap:10px;align-items:center}
+.tcard .th svg{width:40px;height:42px;flex:none}
+.tcard h3{margin:0;font-family:var(--f-display);font-style:italic;font-weight:700;font-size:1.2rem;line-height:1.15}
+.tcard p{margin:0;color:var(--muted);font-size:.95rem}
+.tcard .tf{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.tdots{display:flex;gap:5px}
+.tdots i{width:7px;height:7px;border-radius:50%;background:var(--surface2);transition:all .3s}
+.tdots i.on{width:20px;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.tcard .tb{display:flex;gap:6px}
+.tcard .tx{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:.8rem;border-top:1px solid var(--line);padding-top:8px}
+.tcard .linkbtn{font-size:.82rem;border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;padding:0;text-decoration:underline;font-family:inherit}
+@media (prefers-reduced-motion:reduce){#amb{display:none}}
 </style>
 
 <div class="bg" aria-hidden="true"><div class="par" id="par"><i></i><i></i><i></i><i></i></div></div>
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="burst" aria-hidden="true"></div>
+<div id="amb" aria-hidden="true"></div>
+<button id="tourBtn" type="button" aria-label="Ajuda: ver o tour desta tela" title="Ajuda" hidden>?</button>
 <div class="app">
   <div class="top">
     <a class="brand" href="#inicio" aria-label="Início">
@@ -594,13 +653,13 @@ function lastPrice(k,cid){const e=IDX.get(k);if(!e)return null;
 function route(){const m=location.hash.slice(1).match(/^(planejar|mercado)-([a-z0-9]+)$/);return m?{v:m[1],id:m[2]}:{v:"inicio"}}
 window.addEventListener("hashchange",()=>{ui.q="";ui.dept=null;ui.confirm=null;ui.sugg=false;ui.armed=null;render();window.scrollTo(0,0)});
 
-let pend=false;
+var pend=false;
 
 /* ---------- Atualização sem recriar o que já está na tela ----------
    Compara o HTML novo com o que já existe e só altera o que mudou.
    O campo em que a pessoa está digitando nunca é recriado nem tem o valor trocado,
    então o teclado, o corretor e a seleção do texto não são interrompidos. */
-let composing=false, renderAfterCompose=false;
+var composing=false, renderAfterCompose=false;
 document.addEventListener("compositionstart",()=>{composing=true});
 document.addEventListener("compositionend",()=>{composing=false;if(renderAfterCompose){renderAfterCompose=false;render()}});
 function isTyping(el){return el===document.activeElement&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA")}
@@ -635,7 +694,8 @@ function patch(el,html){
   if(st&&a.isConnected){if(a.value!==st.v)a.value=st.v;if(document.activeElement!==a){a.focus({preventScroll:true});try{a.setSelectionRange(st.s,st.e)}catch(e){}}}
 }
 function render(){if(composing){renderAfterCompose=true;return}if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;if(composing){renderAfterCompose=true;return}draw()})}
-function draw(){
+function draw(){try{drawInner()}finally{if(typeof afterDrawExtras==="function")afterDrawExtras()}}
+function drawInner(){
   if(setupFalta){$("#view").innerHTML=vSetup();$("#barSlot").innerHTML="";return}
   if(!ready){$("#view").innerHTML=`<p class="loading">Carregando suas compras…</p>`;$("#barSlot").innerHTML="";return}
   if(!user){$("#view").innerHTML=vLogin();$("#barSlot").innerHTML="";return}
@@ -856,6 +916,148 @@ document.addEventListener("submit",e=>{e.preventDefault();const f=e.target;const
     ui.aNome="";const ni=$("#aNome");if(ni)ni.value="";ui.aQtd=1;ui.sugg=false;ui.sIdx=-1;ui.deptManual=false;ui.deptAuto=false;ui.aDept=ui.aDeptBase;render();setTimeout(()=>{const n=$("#aNome");n&&n.focus()},30)}
 });
 </script>
+<script>
+/* ---------- Personagens (desenhos originais) ---------- */
+const SVG_BEAR=`<svg class="bi" viewBox="0 0 64 66" aria-hidden="true"><circle cx="17" cy="15" r="9" fill="#C68A64"/><circle cx="47" cy="15" r="9" fill="#C68A64"/><circle cx="17" cy="15" r="5" fill="#F4B9A6"/><circle cx="47" cy="15" r="5" fill="#F4B9A6"/>
+<ellipse cx="32" cy="54" rx="15" ry="11" fill="#C68A64"/><ellipse cx="32" cy="56" rx="8.5" ry="6.5" fill="#F3D6C2"/><ellipse cx="17" cy="52" rx="4.5" ry="6" fill="#B97B57"/><ellipse cx="47" cy="52" rx="4.5" ry="6" fill="#B97B57"/>
+<circle cx="32" cy="30" r="20" fill="#C68A64"/><ellipse cx="32" cy="37" rx="9" ry="7" fill="#F3D6C2"/><ellipse cx="32" cy="34" rx="3.2" ry="2.3" fill="#4A2C22"/><path d="M29 39q3 2.5 6 0" stroke="#4A2C22" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+<ellipse class="eye" cx="24.5" cy="28" rx="2.5" ry="2.7" fill="#2A1A14"/><ellipse class="eye" cx="39.5" cy="28" rx="2.5" ry="2.7" fill="#2A1A14"/><circle cx="25.3" cy="27.1" r=".8" fill="#fff"/><circle cx="40.3" cy="27.1" r=".8" fill="#fff"/>
+<circle cx="20" cy="35" r="3.2" fill="#FF8FB4" opacity=".75"/><circle cx="44" cy="35" r="3.2" fill="#FF8FB4" opacity=".75"/>
+<path d="M44 9l7-5v10zM44 9l-7-5v10z" fill="#FF5E9C"/><circle cx="44" cy="9" r="2.4" fill="#FF8DBA"/></svg>`;
+const SVG_UNI=`<svg class="wi" viewBox="0 -14 124 108" aria-hidden="true">
+<g class="tail"><path d="M24 40C8 38 4 56 10 70" stroke="#FF8DBA" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M24 44C12 46 10 60 16 72" stroke="#C9A0FF" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M25 48C18 54 18 64 22 72" stroke="#9FD8FF" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+<rect class="leg" x="34" y="56" width="8" height="26" rx="4" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/><rect class="leg b" x="46" y="56" width="8" height="26" rx="4" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/>
+<rect class="leg b" x="72" y="56" width="8" height="26" rx="4" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/><rect class="leg" x="84" y="56" width="8" height="26" rx="4" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/>
+<ellipse cx="62" cy="50" rx="34" ry="18" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/>
+<path d="M82 42L94 16 106 20 92 52z" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5" stroke-linejoin="round"/>
+<ellipse cx="104" cy="20" rx="14" ry="10" fill="#FFF" stroke="#F0CFE3" stroke-width="1.5"/>
+<path d="M104 10L110 -12 114 10z" fill="#FFD36B" stroke="#E8B23C" stroke-width="1.2" stroke-linejoin="round"/><path d="M106.5 4l5-2M106 -1l5-2" stroke="#E8B23C" stroke-width="1"/>
+<g class="mane"><path d="M96 10C86 14 84 28 80 40" stroke="#FF8DBA" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M99 13C92 20 90 30 86 42" stroke="#C9A0FF" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M101 16C97 24 95 32 92 44" stroke="#9FD8FF" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+<circle cx="108" cy="18" r="2" fill="#4A2140"/><circle cx="110" cy="24" r="3" fill="#FF9DBB" opacity=".7"/><path d="M113 26q2 1.5 4 0" stroke="#4A2140" stroke-width="1.2" fill="none"/></svg>`;
+const SVG_PRIN=`<svg class="wi" viewBox="0 0 60 100" aria-hidden="true">
+<path d="M19 20C14 34 15 52 20 60h20c5-8 6-26 1-40z" fill="#8A5530"/>
+<g class="dress"><path d="M23 44L7 92Q30 99 53 92L37 44z" fill="#FF8DBA"/><path d="M9 86Q30 94 51 86L53 92Q30 99 7 92z" fill="#FFC1DA"/><circle cx="20" cy="74" r="1.6" fill="#fff"/><circle cx="38" cy="66" r="1.6" fill="#fff"/><circle cx="31" cy="82" r="1.6" fill="#fff"/></g>
+<rect x="22" y="36" width="16" height="15" rx="5" fill="#FF5E9C"/><path d="M22 42l-5 9M38 42l6 7" stroke="#F6D0BA" stroke-width="3.2" stroke-linecap="round"/>
+<g class="wand"><path d="M44 49L53 33" stroke="#E3B341" stroke-width="2" stroke-linecap="round"/><path d="M53 26l1.8 4.2 4.4.4-3.4 2.9 1 4.4-3.8-2.3-3.8 2.3 1-4.4-3.4-2.9 4.4-.4z" fill="#FFD86B"/></g>
+<circle cx="30" cy="25" r="11" fill="#F6D3BE"/><path d="M19 25C18 13 42 11 41 25C38 18 30 16 24 19C22 21 20 23 19 25z" fill="#9A6236"/>
+<path d="M21 15l3-7 3 5 3-7 3 7 3-5 3 7z" fill="#FFC94D" stroke="#E2A72C" stroke-width="1" stroke-linejoin="round"/><circle cx="30" cy="9" r="1.4" fill="#FF5E9C"/>
+<circle cx="26" cy="26" r="1.5" fill="#4A2140"/><circle cx="34" cy="26" r="1.5" fill="#4A2140"/><circle cx="23.5" cy="30" r="2.3" fill="#FF9DBB" opacity=".7"/><circle cx="36.5" cy="30" r="2.3" fill="#FF9DBB" opacity=".7"/><path d="M27.5 31q2.5 2 5 0" stroke="#C2456F" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+<ellipse cx="23" cy="95" rx="4" ry="2.4" fill="#FF5E9C"/><ellipse cx="37" cy="95" rx="4" ry="2.4" fill="#FF5E9C"/></svg>`;
+const SVG_SPK='<svg viewBox="0 0 24 24"><path d="M12 1.5l2.3 7.2 7.2 2.3-7.2 2.3L12 20.5l-2.3-7.2L2.5 11l7.2-2.3z"/></svg>';
+
+/* ---------- Animações de ambiente: ursinho, unicórnio, princesinha, estrelas cadentes ---------- */
+const AMB={on:ls.get("lc_amb",true)&&!matchMedia("(prefers-reduced-motion: reduce)").matches,layer:null,bear:null,pos:null,timers:[],busy:false,
+  start(){this.layer=document.getElementById("amb");if(!this.on||!this.layer)return;
+    this.timers.push(setTimeout(()=>this.hopLoop(),2500),setTimeout(()=>this.walkLoop(),5000),setTimeout(()=>this.starLoop(),1800));
+    let st;addEventListener("scroll",()=>{if(this.bear){this.bear.style.opacity="0"}clearTimeout(st);st=setTimeout(()=>{if(this.on)this.hop(true)},500)},{passive:true});
+    addEventListener("resize",()=>{if(this.on)this.hop(true)})},
+  stop(){this.timers.forEach(clearTimeout);this.timers=[];if(this.layer)this.layer.innerHTML="";this.bear=null;this.pos=null},
+  toggle(v){this.on=v;ls.set("lc_amb",v);if(v)this.start();else this.stop()},
+  targets(){const vh=innerHeight,bh=parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--barh"))||0;
+    return [...document.querySelectorAll("#view .it,#view .cc,#view .stat,#view .hero,#view .empty")].filter(el=>{const r=el.getBoundingClientRect();return r.width>80&&r.top>70&&r.top<vh-bh-60})},
+  hopLoop(){if(!this.on)return;this.hop(false);this.timers.push(setTimeout(()=>this.hopLoop(),5500+Math.random()*5000))},
+  hop(reset){if(!this.on||document.getElementById("tour"))return;const t=this.targets();
+    if(!t.length){if(this.bear)this.bear.style.opacity="0";return}
+    if(!this.bear){this.bear=document.createElement("div");this.bear.className="bear";this.bear.innerHTML=SVG_BEAR;this.layer.appendChild(this.bear);reset=true}
+    let el=t[Math.floor(Math.random()*t.length)];if(t.length>1&&el===this.lastEl)el=t[(t.indexOf(el)+1)%t.length];this.lastEl=el;
+    const r=el.getBoundingClientRect();const x=Math.min(innerWidth-56,Math.max(8,r.left+r.width*(.35+Math.random()*.3)-22)),y=r.top-42;
+    const b=this.bear;
+    if(reset||!this.pos){b.style.opacity="1";b.animate([{transform:`translate(${x}px,${y+30}px) scale(.3)`,opacity:0},{transform:`translate(${x}px,${y-18}px) scale(1.1)`,opacity:1,offset:.6},{transform:`translate(${x}px,${y}px) scale(1)`,opacity:1}],{duration:520,easing:"cubic-bezier(.3,1.4,.5,1)"});
+      b.style.transform=`translate(${x}px,${y}px)`;this.pos={x,y};return}
+    b.style.opacity="1";const {x:x0,y:y0}=this.pos;b.classList.toggle("flip",x<x0);
+    const peak=Math.min(y0,y)-70-Math.random()*40,fr=[];
+    for(let i=0;i<=12;i++){const k=i/12,xx=x0+(x-x0)*k,yy=(1-k)*(1-k)*y0+2*(1-k)*k*peak+k*k*y;
+      const sq=i===0?"scale(1.12,.86)":i===12?"scale(1.15,.82)":"scale(.95,1.06)";fr.push({transform:`translate(${xx}px,${yy}px) ${sq}`,offset:k})}
+    fr.push({transform:`translate(${x}px,${y}px) scale(1,1)`,offset:1});fr[12].offset=.95;
+    b.animate(fr,{duration:900,easing:"ease-in-out"});b.style.transform=`translate(${x}px,${y}px)`;this.pos={x,y};
+    setTimeout(()=>{if(typeof burst==="function"&&this.on&&Math.random()<.5)burst(x+22,y+40,5,30)},880)},
+  walkLoop(){if(!this.on)return;this.walk(Math.random()<.55?"uni":"prin");this.timers.push(setTimeout(()=>this.walkLoop(),22000+Math.random()*16000))},
+  walk(kind){if(!this.on)return;const w=document.createElement("div");w.className="walker "+kind+(Math.random()<.5?"":" flip");w.innerHTML=kind==="uni"?SVG_UNI:SVG_PRIN;this.layer.appendChild(w);
+    const ww=kind==="uni"?96:50,ltr=!w.classList.contains("flip"),W=innerWidth,dur=(W+ww*2)/(kind==="uni"?70:45)*1000;
+    const a=w.animate([{transform:`translateX(${ltr?-ww-10:W+10}px)`},{transform:`translateX(${ltr?W+10:-ww-10}px)`}],{duration:dur,easing:"linear"});
+    const tr=setInterval(()=>{const r=w.getBoundingClientRect();this.spark(ltr?r.left+8:r.right-8,r.top+(kind==="uni"?r.height*.35:r.height*.25))},kind==="uni"?260:420);
+    a.onfinish=()=>{clearInterval(tr);w.remove()}},
+  spark(x,y){if(!this.layer)return;const s=document.createElement("div");s.className="spk";s.innerHTML=SVG_SPK;
+    const cs=["#FF8DBA","#C9A0FF","#9FD8FF","#FFD86B"];s.querySelector("svg").style.fill=cs[Math.floor(Math.random()*4)];this.layer.appendChild(s);
+    const dy=-10-Math.random()*22,dx=(Math.random()-.5)*16;
+    s.animate([{transform:`translate(${x}px,${y}px) scale(.4)`,opacity:1},{transform:`translate(${x+dx}px,${y+dy}px) scale(1.1) rotate(90deg)`,opacity:0}],{duration:900,easing:"ease-out"}).onfinish=()=>s.remove()},
+  starLoop(){if(!this.on)return;if(!document.hidden)this.star();this.timers.push(setTimeout(()=>this.starLoop(),3500+Math.random()*6000))},
+  star(){const s=document.createElement("div");s.className="shoot";this.layer.appendChild(s);
+    const W=innerWidth,rtl=Math.random()<.5,x0=rtl?W*(.55+Math.random()*.5):W*(-.05+Math.random()*.45),y0=Math.random()*40,ang=(rtl?160:20)+(Math.random()-.5)*14,dist=260+Math.random()*220;
+    const rad=ang*Math.PI/180,x1=x0+Math.cos(rad)*dist,y1=y0+Math.sin(rad)*dist*.55;
+    s.animate([{transform:`translate(${x0}px,${y0}px) rotate(${ang}deg) scaleX(.2)`,opacity:0},{opacity:1,offset:.25},{transform:`translate(${x1}px,${y1}px) rotate(${ang}deg) scaleX(1)`,opacity:0}],{duration:1300+Math.random()*500,easing:"cubic-bezier(.3,.2,.4,1)"}).onfinish=()=>s.remove()}
+};
+
+/* ---------- Tour guiado ---------- */
+const TOUR={
+ inicio:[
+  {t:"Bem-vinda à sua Lista de Compras!",x:"Aqui você anota o que precisa, risca no mercado e acompanha quanto gastou. Vou te mostrar tudo em um minutinho."},
+  {s:'[data-act="newopen"]',t:"Crie uma compra",x:"Toque em Nova compra para começar uma lista para a semana, o mês ou um dia específico."},
+  {s:".stats",t:"Resumo do mês",x:"Quanto você já gastou no mês, quantas compras fez e quantos produtos o app já conhece."},
+  {s:"#busca",t:"Histórico de preços",x:"Digite um produto para ver o último preço pago, o menor e o maior."},
+  {s:".grid .cc",t:"Suas compras",x:"Cada cartão mostra o progresso e o total. Planejar serve para anotar, Ir ao mercado para riscar e Repetir para copiar a lista."},
+  {s:"#tourBtn",t:"Sempre que precisar",x:"Toque neste botão a qualquer momento para ver o tour da tela em que você está."}],
+ planejar:[
+  {s:"#aNome",t:"Anote os itens",x:"Comece a digitar e escolha uma sugestão. O app entende sem acento e até com erro de digitação."},
+  {s:"#aDept",t:"Departamento automático",x:"O departamento é preenchido sozinho e o app aprende com as suas escolhas. Você pode trocar quando quiser."},
+  {s:"#aQtd",t:"Quantidade",x:"Escolha quantas unidades. Se anotar um item que já está na lista, a quantidade é somada."},
+  {s:".modes",t:"Planejar ou No mercado",x:"Use Planejar em casa para anotar, e No mercado para riscar e digitar os preços."},
+  {s:".groups",t:"Lista por departamento",x:"Os itens ficam separados por corredor. Para remover um item, toque no × duas vezes."},
+  {s:".cbar",t:"Total estimado",x:"Com os preços das compras anteriores, o app estima quanto você vai gastar."}],
+ mercado:[
+  {s:".hero",t:"Seu progresso",x:"Veja quantos itens já estão no carrinho, o total e quanto ainda falta."},
+  {s:".it.m .ck",t:"Risque os itens",x:"Toque no círculo ou no nome para riscar o que já pegou."},
+  {s:".it.m .pr",t:"Digite o preço",x:"Digite o preço unitário. O item é riscado sozinho e você vê se o preço subiu ou baixou desde a última compra."},
+  {s:".chips",t:"Filtre por corredor",x:"Mostre só um departamento, ou use Esconder riscados para ver apenas o que falta pegar."},
+  {s:".cbar",t:"Finalize a compra",x:"Ao terminar, toque em Finalizar para guardar o total e os preços no histórico."}]
+};
+const T$={el:null,steps:[],i:0,scr:"",autoDone:{},
+  screen(){const r=route();return r.v==="inicio"?"inicio":(compras[r.id]?r.v:"")},
+  open(scr){const all=TOUR[scr];if(!all)return;this.close(true);
+    this.steps=all.filter(st=>!st.s||document.querySelector(st.s));if(!this.steps.length)return;
+    this.scr=scr;this.i=0;if(AMB.bear)AMB.bear.style.opacity="0";
+    const d=document.createElement("div");d.id="tour";d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");d.setAttribute("aria-label","Tour guiado");
+    d.innerHTML='<div class="hole none"></div><div class="tcard"></div>';document.body.appendChild(d);this.el=d;
+    d.addEventListener("click",e=>{const b=e.target.closest("[data-t]");if(!b)return;const a=b.dataset.t;
+      if(a==="next")this.go(this.i+1);else if(a==="prev")this.go(this.i-1);else if(a==="skip")this.close();else if(a==="amb"){AMB.toggle(!AMB.on);this.paint()}});
+    this.onKey=e=>{if(e.key==="Escape")this.close();else if(e.key==="ArrowRight")this.go(this.i+1);else if(e.key==="ArrowLeft")this.go(this.i-1)};
+    this.onMove=()=>{cancelAnimationFrame(this.raf);this.raf=requestAnimationFrame(()=>this.place())};
+    addEventListener("keydown",this.onKey);addEventListener("resize",this.onMove);addEventListener("scroll",this.onMove,{passive:true});
+    this.go(0)},
+  close(silent){if(!this.el)return;removeEventListener("keydown",this.onKey);removeEventListener("resize",this.onMove);removeEventListener("scroll",this.onMove);
+    this.el.remove();this.el=null;if(this.scr)ls.set("lc_tour1_"+this.scr,true);if(!silent){const b=document.getElementById("tourBtn");if(b&&!b.hidden)b.focus({preventScroll:true});setTimeout(()=>AMB.hop(true),400)}},
+  go(i){if(i<0)return;if(i>=this.steps.length){this.close();if(typeof burst==="function")burst(innerWidth/2,innerHeight/2,18,110);return}
+    this.i=i;const st=this.steps[i];const t=st.s&&document.querySelector(st.s);
+    if(t){const r=t.getBoundingClientRect();if(r.top<80||r.bottom>innerHeight-120)t.scrollIntoView({block:"center",behavior:"smooth"})}
+    this.paint();setTimeout(()=>this.place(),t?380:0)},
+  paint(){if(!this.el)return;const st=this.steps[this.i],n=this.steps.length,last=this.i===n-1;
+    this.el.querySelector(".tcard").outerHTML=`<div class="tcard"><div class="th">${SVG_BEAR.replace('class="bi"','')}<div><span class="lbl">${this.i+1} de ${n}</span><h3>${esc(st.t)}</h3></div></div><p>${esc(st.x)}</p>
+      <div class="tf"><div class="tdots">${this.steps.map((_,k)=>`<i class="${k===this.i?"on":""}"></i>`).join("")}</div>
+      <div class="tb">${this.i?'<button class="btn sm" type="button" data-t="prev">Voltar</button>':""}<button class="btn sm pri" type="button" data-t="next">${last?"Concluir":"Próximo"}</button></div></div>
+      <div class="tx"><button class="linkbtn" type="button" data-t="skip">Pular tour</button><button class="linkbtn" type="button" data-t="amb">Bichinhos animados: ${AMB.on?"ligados":"desligados"}</button></div></div>`;
+    const nb=this.el.querySelector('[data-t="next"]');if(nb)nb.focus({preventScroll:true});this.place()},
+  place(){if(!this.el)return;const st=this.steps[this.i],hole=this.el.querySelector(".hole"),card=this.el.querySelector(".tcard");
+    const t=st.s&&document.querySelector(st.s);const cw=card.offsetWidth,ch=card.offsetHeight,W=innerWidth,H=innerHeight,m=16;
+    if(!t){hole.className="hole none";Object.assign(hole.style,{left:W/2+"px",top:H/2+"px",width:"0px",height:"0px"});
+      card.style.left=Math.max(m,(W-cw)/2)+"px";card.style.top=Math.max(m,(H-ch)/2)+"px";return}
+    const r=t.getBoundingClientRect(),p=8;hole.className="hole";
+    Object.assign(hole.style,{left:r.left-p+"px",top:r.top-p+"px",width:r.width+p*2+"px",height:r.height+p*2+"px"});
+    let top=r.bottom+p+14;if(top+ch>H-m)top=r.top-p-14-ch;if(top<m)top=Math.min(H-ch-m,Math.max(m,r.bottom+p+14));
+    const left=Math.min(W-cw-m,Math.max(m,r.left+r.width/2-cw/2));card.style.left=left+"px";card.style.top=top+"px"}
+};
+
+/* Depois de cada desenho: altura da barra de baixo, botão de ajuda, tour automático no primeiro acesso */
+function afterDrawExtras(){
+  const cb=document.querySelector("#barSlot .cbar");document.documentElement.style.setProperty("--barh",(cb?cb.offsetHeight:0)+"px");
+  const btn=document.getElementById("tourBtn"),app=document.querySelector("#view .app");if(btn)btn.hidden=!app;
+  if(!app){if(T$.el)T$.close(true);return}
+  const scr=T$.screen();if(scr&&!T$.el&&!T$.autoDone[scr]&&!ls.get("lc_tour1_"+scr,false)){T$.autoDone[scr]=true;setTimeout(()=>{if(T$.screen()===scr&&!T$.el)T$.open(scr)},1100)}
+}
+document.addEventListener("click",e=>{if(e.target.closest("#tourBtn")){const s=T$.screen();if(s)T$.open(s)}});
+window.addEventListener("hashchange",()=>{if(T$.el)T$.close(true)});
+setTimeout(()=>AMB.start(),0);
+</script>
+
 
 </body>
 </html>
