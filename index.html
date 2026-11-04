@@ -9,9 +9,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Compras">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600..800;1,9..144,600..800&family=Nunito:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap">
 <style>
@@ -334,6 +336,10 @@ h2{font-family:var(--f-display);font-style:italic;font-weight:600;font-size:1.25
   *,*::before,*::after{animation:none!important;transition:none!important}
   #fx{display:none}
 }
+/* iPhone: campos com 16px evitam o zoom automático do Safari ao tocar */
+@supports (-webkit-touch-callout:none){.inp,.sel,.tdate,.q,.pr input{font-size:16px}}
+button,a,.chip,.ck{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+body{overscroll-behavior-y:none}
 </style>
 
 <div class="bg" aria-hidden="true"><div class="par" id="par"><i></i><i></i><i></i><i></i></div></div>
