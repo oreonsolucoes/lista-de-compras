@@ -10,5 +10,4 @@ window.FIREBASE_CONFIG = {
   appId: "1:947646450609:web:a42f16cb1e6f6d2d22cb90"
 };
 
-// Nome do espaço compartilhado. Todas as contas que entrarem veem as mesmas listas.
-window.LISTA_ESPACO = "casa";
+// Cada conta usa o próprio espaço no banco (listaCompras/<uid>), criado no primeiro acesso.

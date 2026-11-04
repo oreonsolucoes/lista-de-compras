@@ -19,7 +19,7 @@ App de lista de compras com várias compras por data, modo **Planejar** (anotar 
 4. **Realtime Database**: crie o banco e, na aba **Regras**, cole o conteúdo de `database.rules.json` e publique.
 5. **Configurações do projeto › Seus apps**: crie um app Web e copie o objeto de configuração para `firebase-config.js`.
 
-Os dados ficam em `listaCompras/casa/compras` e `listaCompras/casa/itens`. Todas as contas que entrarem compartilham o mesmo espaço `casa`. Para separar, troque `LISTA_ESPACO` em `firebase-config.js`.
+Cada conta tem o próprio espaço em `listaCompras/<uid>` (com `perfil`, `compras`, `itens` e `aprendizado`), criado automaticamente no primeiro acesso. As regras só deixam cada conta ler e gravar o próprio espaço, então o app pode ser distribuído para várias pessoas: cada uma cria a conta na tela de login e vê apenas as listas dela. A tela de login também tem "Esqueci minha senha".
 
 ## 2. GitHub Pages
 

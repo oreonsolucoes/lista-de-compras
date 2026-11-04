@@ -203,6 +203,9 @@ h2{font-family:var(--f-display);font-weight:600;font-size:1.05rem;margin:0}
 .auth{max-width:400px;margin:40px auto 0;padding:24px;display:flex;flex-direction:column;gap:14px}
 .auth p{margin:0;color:var(--muted)}
 .err{background:var(--danger-soft);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.ok{background:var(--accent-soft);color:var(--accent);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.quem{font-size:.78rem;color:var(--muted);max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:460px){.quem{display:none}}
 .linkbtn{border:0;background:none;color:var(--accent);font-weight:700;cursor:pointer;padding:0;text-decoration:underline}
 code{font-family:var(--f-num);font-size:.85em;background:var(--surface2);padding:1px 5px;border-radius:5px}
 @media (max-width:460px){.hero{grid-template-columns:1fr;justify-items:start}.newform{grid-template-columns:1fr}}
@@ -367,7 +370,7 @@ body{overscroll-behavior-y:none}
       Lista de Compras
     </a>
     <div class="topr"><div class="sync" id="sync" data-s="wait"><i></i><span>Conectando…</span></div>
-    <button class="btn sm ghost" id="sair" data-act="sair" hidden>Sair</button></div>
+    <span class="quem" id="quem" hidden></span><button class="btn sm ghost" id="sair" data-act="sair" hidden>Sair</button></div>
   </div>
   <main id="view"><p class="loading">Carregando suas compras…</p></main>
 </div>
@@ -520,8 +523,8 @@ function pickSug(n,d,src){ui.aNome=n;const el=$("#aNome");if(el)el.value=n;
 
 /* ---------- Armazenamento: Firebase Realtime Database ---------- */
 const CFG=window.FIREBASE_CONFIG||null;
-const ESPACO=String(window.LISTA_ESPACO||"casa").replace(/[.#$\[\]\/]/g,"_");
-let user=null, base=null, setupFalta=false, authMsg="", authModo="entrar", subs=[];
+/* Cada conta tem o próprio espaço: listaCompras/<uid>. As regras do banco impedem acesso ao espaço de outra conta. */
+let user=null, base=null, setupFalta=false, authMsg="", authInfo="", authModo="entrar", subs=[];
 const S={
   sync(s,t){const el=$("#sync");el.dataset.s=s;el.querySelector("span").textContent=t},
   write(col,id,op,data){
@@ -539,7 +542,9 @@ const S={
 function desliga(){subs.forEach(f=>f());subs=[];base=null}
 function liga(u){
   desliga();ready=false;render();
-  base=firebase.database().ref("listaCompras/"+ESPACO);
+  base=firebase.database().ref("listaCompras/"+u.uid);
+  // Primeiro acesso da conta: cria o espaço dela com um perfil
+  base.child("perfil").once("value").then(s=>{if(!s.exists())return base.child("perfil").set({email:u.email||"",criadoEm:Date.now()})}).catch(()=>{});
   const got={c:false,i:false};
   const pronto=()=>{if(got.c&&got.i){ready=true;render()}};
   const onErr=e=>{S.sync("err",/permission/i.test(e&&(e.code||e.message)||"")?"Sem permissão: confira as regras do banco":"Erro ao ler os dados");ready=true;render()};
@@ -554,14 +559,15 @@ function traduz(e){const c=(e&&e.code)||"";
   return ({"auth/invalid-email":"E-mail inválido.","auth/missing-password":"Digite a senha.","auth/invalid-credential":"E-mail ou senha incorretos.",
     "auth/wrong-password":"E-mail ou senha incorretos.","auth/user-not-found":"E-mail ou senha incorretos.","auth/email-already-in-use":"Este e-mail já tem conta. Use “Entrar”.",
     "auth/weak-password":"A senha precisa de pelo menos 6 caracteres.","auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos.",
-    "auth/network-request-failed":"Sem internet. Tente de novo.","auth/operation-not-allowed":"Ative o login por e-mail/senha no Firebase (Authentication › Sign-in method)."})[c]||"Não foi possível entrar ("+(c||"erro")+")."}
+    "auth/network-request-failed":"Sem internet. Tente de novo.","auth/missing-email":"Digite seu e-mail.","auth/operation-not-allowed":"Ative o login por e-mail/senha no Firebase (Authentication › Sign-in method)."})[c]||"Não foi possível entrar ("+(c||"erro")+")."}
 
 (function boot(){
   if(!CFG||!CFG.apiKey||/COLE|SUA_/i.test(CFG.apiKey)||typeof firebase==="undefined"){setupFalta=true;ready=true;S.sync("err","Firebase não configurado");render();return}
   firebase.initializeApp(CFG);
   firebase.database().ref(".info/connected").on("value",s=>{if(!user)return;S.sync(s.val()?"ok":"err",s.val()?"Sincronizado":"Sem conexão — salva quando voltar")});
   firebase.auth().onAuthStateChanged(u=>{
-    user=u;$("#sair").hidden=!u;
+    user=u;$("#sair").hidden=!u;const q=$("#quem");q.hidden=!u;q.textContent=u?(u.email||""):"";
+    if(!u){location.hash="inicio";ui.q="";ui.aNome="";FX.G={};FX.R={};FX.T={}}
     if(u){S.sync("wait","Carregando…");liga(u)}
     else{desliga();compras={};itens={};aprend={};ready=true;S.sync("wait","Entre para sincronizar");render()}
   });
@@ -681,11 +687,12 @@ function vSetup(){return `<div class="card auth"><h1>Falta configurar o Firebase
   <p>Depois ative <b>Authentication › E-mail/senha</b> e crie o <b>Realtime Database</b> com as regras de <code>database.rules.json</code>.</p></div>`}
 function vLogin(){const cria=authModo==="criar";
   return `<form class="card auth" id="fLogin" autocomplete="on"><div><span class="lbl">${cria?"Nova conta":"Bem-vindo de volta"}</span><h1>${cria?"Criar conta":"Entrar"}</h1></div>
-  <p>Use a mesma conta no celular e no computador para ver as mesmas listas.</p>
-  ${authMsg?`<div class="err" role="alert">${esc(authMsg)}</div>`:""}
+  <p>${cria?"Sua conta ganha um espaço só seu: ninguém mais vê suas listas.":"Use a mesma conta no celular e no computador para ver as mesmas listas."}</p>
+  ${authMsg?`<div class="err" role="alert">${esc(authMsg)}</div>`:""}${authInfo?`<div class="ok" role="status">${esc(authInfo)}</div>`:""}
   <label class="field"><span class="lbl">E-mail</span><input class="inp" id="lEmail" type="email" autocomplete="email" required></label>
   <label class="field"><span class="lbl">Senha</span><input class="inp" id="lSenha" type="password" autocomplete="${cria?"new-password":"current-password"}" minlength="6" required></label>
   <button class="btn pri" type="submit">${cria?"Criar conta e entrar":"Entrar"}</button>
+  ${cria?"":`<p><button type="button" class="linkbtn" data-act="esqueci">Esqueci minha senha</button></p>`}
   <p>${cria?"Já tem conta?":"Primeira vez aqui?"} <button type="button" class="linkbtn" data-act="authmodo">${cria?"Entrar":"Criar conta"}</button></p></form>`}
 
 /* ---------- Tela: Início ---------- */
@@ -794,7 +801,10 @@ document.addEventListener("click",e=>{
   if(a!=="rm"&&ui.armed){ui.armed=null}
   switch(a){
     case "sair":firebase.auth().signOut();location.hash="inicio";break;
-    case "authmodo":authModo=authModo==="criar"?"entrar":"criar";authMsg="";render();break;
+    case "authmodo":authModo=authModo==="criar"?"entrar":"criar";authMsg="";authInfo="";render();break;
+    case "esqueci":{const em=($("#lEmail")||{}).value||"";const keep=em;
+      firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>{authMsg="";authInfo="Enviamos um link para redefinir a senha em "+em.trim()+". Confira também o spam."})
+        .catch(err=>{authInfo="";authMsg=traduz(err)}).finally(()=>{render();setTimeout(()=>{const x=$("#lEmail");if(x)x.value=keep},0)});break}
     case "newopen":ui.newOpen=true;render();setTimeout(()=>{const n=$("#nNome");n&&n.focus()},40);break;
     case "newcancel":ui.newOpen=false;render();break;
     case "askdel":ui.confirm=id;render();break;
@@ -838,7 +848,7 @@ document.addEventListener("focusout",e=>{if(e.target.id==="aNome")setTimeout(()=
 document.addEventListener("submit",e=>{e.preventDefault();const f=e.target;const r=route();
   if(f.id==="fLogin"){const em=$("#lEmail").value.trim(),pw=$("#lSenha").value;const btn=f.querySelector("[type=submit]");btn.disabled=true;
     const A=firebase.auth();(authModo==="criar"?A.createUserWithEmailAndPassword(em,pw):A.signInWithEmailAndPassword(em,pw))
-      .then(()=>{authMsg=""}).catch(err=>{authMsg=traduz(err);btn.disabled=false;render();setTimeout(()=>{const x=$("#lEmail");if(x){x.value=em}},0)});return}
+      .then(()=>{authMsg="";authInfo=""}).catch(err=>{authMsg=traduz(err);btn.disabled=false;render();setTimeout(()=>{const x=$("#lEmail");if(x){x.value=em}},0)});return}
   if(f.id==="fNova"){const nome=$("#nNome").value.trim()||("Compra de "+toDate($("#nData").value).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}));
     const id=uid();S.write("compras",id,"set",{nome,data:$("#nData").value||hoje(),criado:Date.now()});ui.newOpen=false;location.hash="planejar-"+id}
   else if(f.id==="fAdd"&&r.id){const nome=ui.aNome.trim().replace(/\s+/g," ");if(!nome)return;
