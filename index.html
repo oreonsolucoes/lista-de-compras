@@ -276,10 +276,12 @@ h2{font-family:var(--f-display);font-style:italic;font-weight:600;font-size:1.25
 .bar-p i::after,.dh .mini i::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.55) 50%,transparent 75%);transform:translateX(-100%);animation:sweep 2.6s ease-in-out infinite}
 @keyframes sweep{60%,100%{transform:translateX(100%)}}
 .dh .mini{height:6px;border-radius:999px}
-.grow{animation:grow 1s cubic-bezier(.2,.8,.2,1) both}
+.grow{animation:grow 1s cubic-bezier(.2,.8,.2,1) both}.grow.g1{animation-name:grow1}
 @keyframes grow{from{width:var(--from)}to{width:var(--to)}}
-.ringc.anim{animation:ringgo 1.2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes grow1{from{width:var(--from)}to{width:var(--to)}}
+.ringc.anim{animation:ringgo 1.2s cubic-bezier(.2,.8,.2,1) both}.ringc.anim.a1{animation-name:ringgo1}
 @keyframes ringgo{from{stroke-dashoffset:var(--from)}to{stroke-dashoffset:var(--to)}}
+@keyframes ringgo1{from{stroke-dashoffset:var(--from)}to{stroke-dashoffset:var(--to)}}
 .ring{filter:drop-shadow(0 6px 14px rgba(226,85,143,.35))}
 .ring b{font-family:var(--f-display);font-style:italic;font-weight:800;font-size:1.35rem;color:var(--accent)}
 .hero .kv .num{font-family:var(--f-num);font-weight:800}
@@ -369,10 +371,10 @@ const FX={last:null,entering:true,G:{},R:{},T:{},
   pre(r){const k=r.v+(r.id||"");this.entering=k!==this.last;this.last=k}};
 function grow(key,val){const prev=FX.G[key];FX.G[key]=val;const from=(FX.entering||prev===undefined)?0:prev;
   if(from===val||FX.reduce)return `<i style="width:${val}%"></i>`;
-  return `<i class="grow" style="--from:${from}%;--to:${val}%;width:${val}%"></i>`}
+  FX.n=(FX.n||0)+1;return `<i class="grow g${FX.n%2}" style="--from:${from}%;--to:${val}%;width:${val}%"></i>`}
 function ringArc(key,pct,R,C){const to=C*(1-pct/100);const prev=FX.R[key];FX.R[key]=to;const from=(FX.entering||prev===undefined)?C:prev;
   const a=from!==to&&!FX.reduce;
-  return `<circle class="ringc${a?" anim":""}" cx="50" cy="50" r="${R}" fill="none" stroke="url(#rg)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${to}" style="--from:${from};--to:${to}"/>`}
+  FX.n=(FX.n||0)+1;return `<circle class="ringc${a?" anim a"+(FX.n%2):""}" cx="50" cy="50" r="${R}" fill="none" stroke="url(#rg)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${to}" style="--from:${from};--to:${to}"/>`}
 function bump(key,val){const prev=FX.T[key];FX.T[key]=val;return (!FX.entering&&prev!==undefined&&prev!==val)?" bump":""}
 function fxAfterDraw(){if(!FX.entering)return;const v=document.getElementById("view"),b=document.getElementById("barSlot");
   [v,b].forEach(el=>{if(!el)return;el.classList.remove("enter");void el.offsetWidth;el.classList.add("enter")});
@@ -523,7 +525,46 @@ function route(){const m=location.hash.slice(1).match(/^(planejar|mercado)-([a-z
 window.addEventListener("hashchange",()=>{ui.q="";ui.dept=null;ui.confirm=null;ui.sugg=false;ui.armed=null;render();window.scrollTo(0,0)});
 
 let pend=false;
-function render(){if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;draw()})}
+
+/* ---------- Atualização sem recriar o que já está na tela ----------
+   Compara o HTML novo com o que já existe e só altera o que mudou.
+   O campo em que a pessoa está digitando nunca é recriado nem tem o valor trocado,
+   então o teclado, o corretor e a seleção do texto não são interrompidos. */
+let composing=false, renderAfterCompose=false;
+document.addEventListener("compositionstart",()=>{composing=true});
+document.addEventListener("compositionend",()=>{composing=false;if(renderAfterCompose){renderAfterCompose=false;render()}});
+function isTyping(el){return el===document.activeElement&&(el.tagName==="INPUT"||el.tagName==="TEXTAREA")}
+function nodeKey(n){return n.nodeType===1?(n.id||n.getAttribute("data-k")||null):null}
+function sameKind(a,b){return a.nodeType===b.nodeType&&(a.nodeType!==1||(a.tagName===b.tagName&&a.namespaceURI===b.namespaceURI))}
+function morphNode(from,to){
+  if(from.nodeType!==1){if(from.nodeValue!==to.nodeValue)from.nodeValue=to.nodeValue;return}
+  const typing=isTyping(from);
+  for(let i=from.attributes.length-1;i>=0;i--){const n=from.attributes[i].name;if(!to.hasAttribute(n)&&!(typing&&n==="value"))from.removeAttribute(n)}
+  for(const a of to.attributes){if(typing&&a.name==="value")continue;if(from.getAttribute(a.name)!==a.value)from.setAttribute(a.name,a.value)}
+  if(from.tagName==="INPUT"){if(!typing){const v=to.getAttribute("value")||"";if(from.type!=="checkbox"&&from.value!==v)from.value=v}return}
+  if(from.tagName==="TEXTAREA"){if(!typing&&from.value!==to.value)from.value=to.value;return}
+  morphChildren(from,to);
+  if(from.tagName==="SELECT"&&from!==document.activeElement){const sel=to.querySelector("option[selected]");const v=sel?sel.value:(to.options&&to.options[0]?to.options[0].value:"");if(from.value!==v)from.value=v}
+}
+function morphChildren(from,to){
+  const olds=[...from.childNodes],keyed=new Map();
+  olds.forEach(n=>{const k=nodeKey(n);if(k)keyed.set(k,n)});
+  const used=new Set();let oi=0,ref=from.firstChild;
+  for(const nn of [...to.childNodes]){
+    const k=nodeKey(nn);let m=null;
+    if(k){const c=keyed.get(k);if(c&&!used.has(c)&&sameKind(c,nn))m=c}
+    else{while(oi<olds.length&&(used.has(olds[oi])||nodeKey(olds[oi])))oi++;if(oi<olds.length&&sameKind(olds[oi],nn)){m=olds[oi];oi++}}
+    if(m){used.add(m);if(m===ref)ref=ref.nextSibling;else from.insertBefore(m,ref);morphNode(m,nn)}
+    else from.insertBefore(nn,ref);
+  }
+  olds.forEach(n=>{if(!used.has(n)&&n.parentNode===from&&!(n.nodeType===1&&n.contains(document.activeElement)&&isTyping(document.activeElement)))from.removeChild(n)});
+}
+function patch(el,html){
+  const a=document.activeElement,st=a&&isTyping(a)&&el.contains(a)?{v:a.value,s:a.selectionStart,e:a.selectionEnd}:null;
+  const t=document.createElement("template");t.innerHTML=html;morphChildren(el,t.content);
+  if(st&&a.isConnected){if(a.value!==st.v)a.value=st.v;if(document.activeElement!==a){a.focus({preventScroll:true});try{a.setSelectionRange(st.s,st.e)}catch(e){}}}
+}
+function render(){if(composing){renderAfterCompose=true;return}if(pend)return;pend=true;requestAnimationFrame(()=>{pend=false;if(composing){renderAfterCompose=true;return}draw()})}
 function draw(){
   if(setupFalta){$("#view").innerHTML=vSetup();$("#barSlot").innerHTML="";return}
   if(!ready){$("#view").innerHTML=`<p class="loading">Carregando suas compras…</p>`;$("#barSlot").innerHTML="";return}
@@ -536,8 +577,9 @@ function draw(){
   else if(r.v==="planejar"){[html,bar]=vPlanejar(compras[r.id])}
   else if(r.v==="mercado"){[html,bar]=vMercado(compras[r.id])}
   else html=vInicio();
-  $("#view").innerHTML=html;$("#barSlot").innerHTML=bar;fxAfterDraw();
-  if(keep){const el=document.getElementById(keep.id);if(el){el.value=keep.v;el.focus({preventScroll:true});try{el.setSelectionRange(keep.s,keep.e)}catch(e){}}}
+  if(FX.entering){$("#view").innerHTML=html;$("#barSlot").innerHTML=bar}else{patch($("#view"),html);patch($("#barSlot"),bar)}
+  fxAfterDraw();
+  if(keep&&FX.entering){const el=document.getElementById(keep.id);if(el){el.value=keep.v;el.focus({preventScroll:true});try{el.setSelectionRange(keep.s,keep.e)}catch(e){}}}
 }
 
 /* ---------- Componentes ---------- */
@@ -555,7 +597,7 @@ function grupos(list,rowFn,sortFn){
   const g={};list.forEach(i=>{(g[i.depto||OUTROS]||(g[i.depto||OUTROS]=[])).push(i)});
   const order=[...DEPTS,OUTROS,...Object.keys(g).filter(k=>![...DEPTS,OUTROS].includes(k))];
   return `<div class="groups">${order.filter(d=>g[d]).map(d=>{const l=g[d].sort(sortFn);const ok=l.filter(i=>i.ok).length;
-    return `<section class="dept"><div class="dh"><h3>${esc(d)}</h3><span class="mini">${grow("d"+d,Math.round(ok/l.length*100))}</span><span class="num">${ok}/${l.length}</span></div>
+    return `<section class="dept" data-k="d-${esc(d)}"><div class="dh"><h3>${esc(d)}</h3><span class="mini">${grow("d"+d,Math.round(ok/l.length*100))}</span><span class="num">${ok}/${l.length}</span></div>
     <div class="items">${l.map(rowFn).join("")}</div></section>`}).join("")}</div>`}
 function modes(c,cur){return `<nav class="modes" aria-label="Modo"><a href="#planejar-${c.id}" ${cur==="p"?'aria-current="page"':""}>Planejar</a><a href="#mercado-${c.id}" ${cur==="m"?'aria-current="page"':""}>No mercado</a></nav>`}
 function chead(c,cur){return `<div class="chead"><a class="back" href="#inicio">← Todas as compras</a>
@@ -590,7 +632,7 @@ function vInicio(){
   const gasto=cs.filter(c=>(c.data||"").startsWith(mes)).reduce((a,c)=>a+st(c.id).total,0);
   const nMes=cs.filter(c=>(c.data||"").startsWith(mes)&&st(c.id).total>0).length;
   const card=c=>{const s=st(c.id);const badge=c.concluida?'<span class="badge done">Concluída</span>':s.ok?'<span class="badge go">No mercado</span>':'<span class="badge">Planejando</span>';
-    return `<article class="card cc"><div class="cc-h"><div><h3>${esc(c.nome)}</h3><span class="muted">${fmtData(c.data)}</span></div>${badge}</div>
+    return `<article class="card cc" data-k="c-${c.id}"><div class="cc-h"><div><h3>${esc(c.nome)}</h3><span class="muted">${fmtData(c.data)}</span></div>${badge}</div>
       <div class="bar-p" role="progressbar" aria-valuenow="${s.pct}" aria-valuemin="0" aria-valuemax="100">${grow("c"+c.id,s.pct)}</div>
       <div class="cc-m"><span>${s.ok}/${s.n} itens · ${s.pct}%</span><span class="num">${s.total>0?brl(s.total):s.est>0?"≈ "+brl(s.est):"—"}</span></div>
       <div class="cc-a"><a class="btn sm" href="#planejar-${c.id}">Planejar</a><a class="btn sm pri" href="#mercado-${c.id}">${c.concluida?"Ver compra":"Ir ao mercado"}</a>
@@ -631,7 +673,7 @@ function vPlanejar(c){
   let qo="";for(let n=1;n<=10;n++)qo+=`<option value="${n}"${n===ui.aQtd?" selected":""}>${n}×</option>`;
   const vis=filtra(all,false);
   const row=i=>{const lp=i.preco!=null?i.preco:lastPrice(norm(i.nome),c.id);
-    return `<div class="it p${i.ok?" ok":""}"><div class="nm"><b>${esc(i.nome)}</b>${i.ok?'<small>Já no carrinho</small>':""}</div>${qtySel(i)}
+    return `<div class="it p${i.ok?" ok":""}" data-k="r-${i.id}"><div class="nm"><b>${esc(i.nome)}</b>${i.ok?'<small>Já no carrinho</small>':""}</div>${qtySel(i)}
     <span class="est">${lp!=null?"≈ "+brl(lp*(i.qtd||1)):"—"}</span>
     <button class="del${ui.armed===i.id?" arm":""}" data-act="rm" data-id="${i.id}" aria-label="Remover ${esc(i.nome)}">${ui.armed===i.id?"APAGAR":"×"}</button></div>`};
   const html=`<div class="app" style="padding-top:18px">${chead(c,"p")}
@@ -653,7 +695,7 @@ function vMercado(c){
   const all=itensDe(c.id);const s=st(c.id);
   const R=40,C=2*Math.PI*R;
   const vis=filtra(all,ui.hideOk);
-  const row=i=>`<div class="it m${i.ok?" ok":""}${ui.just===i.id?" pop":""}">
+  const row=i=>`<div class="it m${i.ok?" ok":""}${ui.just===i.id?" pop":""}" data-k="r-${i.id}">
     <button class="ck" data-act="tg" data-id="${i.id}" aria-label="${i.ok?"Desmarcar":"Riscar"} ${esc(i.nome)}"><span></span></button>
     <div class="nm" data-act="tg" data-id="${i.id}"><b>${esc(i.nome)}</b>${i.preco!=null&&(i.qtd||1)>1?`<small class="num">${i.qtd} × ${brl(i.preco)} = ${brl(i.preco*i.qtd)}</small>`:""}${trendHTML(i)}</div>
     ${qtySel(i)}
@@ -707,8 +749,8 @@ document.addEventListener("click",e=>{
   }
 });
 document.addEventListener("input",e=>{const t=e.target;
-  if(t.id==="busca"){ui.q=t.value;render()}
-  else if(t.id==="aNome"){ui.aNome=t.value;ui.sugg=true;render()}
+  if(t.id==="busca"){ui.q=t.value;if(!e.isComposing)render()}
+  else if(t.id==="aNome"){ui.aNome=t.value;ui.sugg=true;if(!e.isComposing)render()}
 });
 document.addEventListener("change",e=>{const t=e.target;const r=route();
   if(t.dataset.f==="qtd")S.write("itens",t.dataset.id,"update",{qtd:+t.value});
