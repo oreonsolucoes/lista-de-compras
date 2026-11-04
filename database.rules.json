@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "listaCompras": {
+      "$espaco": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        "compras": {
+          "$cid": {
+            ".validate": "newData.hasChildren(['nome', 'data'])",
+            "nome": { ".validate": "newData.isString() && newData.val().length <= 60" },
+            "data": { ".validate": "newData.isString() && newData.val().length == 10" }
+          }
+        },
+        "itens": {
+          "$iid": {
+            ".validate": "newData.hasChildren(['cid', 'nome'])",
+            "nome": { ".validate": "newData.isString() && newData.val().length <= 60" },
+            "qtd": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 99" },
+            "preco": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+            "ok": { ".validate": "newData.isBoolean()" }
+          }
+        }
+      }
+    }
+  }
+}
